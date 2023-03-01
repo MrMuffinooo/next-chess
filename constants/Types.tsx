@@ -1,0 +1,41 @@
+export type Piece = "K" | "Q" | "R" | "B" | "N" | "p";
+export type Color = "white" | "black";
+// export type PositionsRelation =
+//   | "N"
+//   | "NE"
+//   | "E"
+//   | "SE"
+//   | "S"
+//   | "SW"
+//   | "W"
+//   | "NW";
+
+export type Positions = {
+  figure: Piece | null;
+  color: Color | null;
+}[][];
+
+export type xyCoords = {
+  x: number;
+  y: number;
+};
+export type Direction = {
+  xDelta: number;
+  yDelta: number;
+};
+
+export type MoveLog = {
+  from: xyCoords;
+  to: xyCoords;
+  takes: Piece | null;
+};
+
+/*
+K-king
+Q-queen
+R-rook
+B-bishop
+N-knight
+p-pawn
+
+*/
