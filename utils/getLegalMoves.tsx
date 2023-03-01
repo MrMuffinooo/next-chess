@@ -174,6 +174,53 @@ const isMoveSelfChecking = (from: xyCoords, to: xyCoords): boolean => {
   throw new Error("Function not implemented.");
 };
 
+//does not check legality
+const move = (
+  from: xyCoords,
+  to: xyCoords,
+  positions: Positions
+): Positions => {
+  const newPositions: Positions = JSON.parse(JSON.stringify(positions));
+
+  if (newPositions[from.x][from.y].figure === "K") {
+    //castle
+    if (from.x - to.x === 2) {
+      //short
+      newPositions[to.x][to.y].figure = "K";
+      newPositions[to.x][to.y].color = newPositions[from.x][from.y].color;
+      newPositions[from.x][from.y] = { figure: null, color: null };
+
+      newPositions[to.x + 1][to.y].figure = "R";
+      newPositions[to.x + 1][to.y].color = newPositions[0][from.y].color;
+      newPositions[0][from.y] = { figure: null, color: null };
+      return newPositions;
+    } else if (from.x - to.x === -2) {
+      //long
+      newPositions[to.x][to.y].figure = "K";
+      newPositions[to.x][to.y].color = newPositions[from.x][from.y].color;
+      newPositions[from.x][from.y] = { figure: null, color: null };
+
+      newPositions[to.x - 1][to.y].figure = "R";
+      newPositions[to.x - 1][to.y].color = newPositions[7][from.y].color;
+      newPositions[7][from.y] = { figure: null, color: null };
+      return newPositions;
+    }
+  }
+  //en passant
+  if (
+    newPositions[from.x][from.y].figure === "p" &&
+    from.x != to.x &&
+    newPositions[to.x][to.y].figure === null
+  ) {
+    newPositions[to.x][from.y] = { figure: null, color: null };
+  }
+
+  newPositions[to.x][to.y].figure = newPositions[from.x][from.y].figure;
+  newPositions[to.x][to.y].color = newPositions[from.x][from.y].color;
+  newPositions[from.x][from.y] = { figure: null, color: null };
+  return newPositions;
+};
+
 const filterChecks = (
   positions: Positions,
   coords: xyCoords,
