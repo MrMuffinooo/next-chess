@@ -2,7 +2,8 @@ import { diagonalDirections, straightDirections } from "@/constants/Constans";
 import { Positions, xyCoords, Color, Direction } from "@/constants/Types";
 export const getLegalMoves = (
   positions: Positions,
-  from: xyCoords
+  from: xyCoords,
+  couldEnPassantOn: xyCoords | null
 ): xyCoords[] => {
   const figure = positions[from.x][from.y].figure;
   const color = positions[from.x][from.y].color;
@@ -28,7 +29,7 @@ export const getLegalMoves = (
     case "p":
       //en passaint
       //promotion
-      moves.concat(pawnMoves(from, positions));
+      moves.concat(pawnMoves(from, positions, couldEnPassantOn));
       break;
     case "K":
       //castle
@@ -151,7 +152,6 @@ const getAdjasentFields = (coords: xyCoords): xyCoords[] => {
   return fields.filter(isOnBoard);
 };
 
-/////////////////////////////////TODOVVV
 const knightMoves = (from: xyCoords): xyCoords[] => {
   return [
     { x: from.x - 1, y: from.y + 2 },
@@ -165,12 +165,60 @@ const knightMoves = (from: xyCoords): xyCoords[] => {
   ].filter(isOnBoard);
 };
 
+function pawnMoves(
+  from: xyCoords,
+  positions: Positions,
+  couldEnPassantOn: xyCoords | null
+): xyCoords[] {
+  const moves: xyCoords[] = [];
+  const color = positions[from.x][from.y].color;
+  const dir = color === "white" ? 1 : -1;
+  if (positions[from.x][from.y + dir].figure === null) {
+    moves.push({ x: from.x, y: from.y + dir });
+  }
+  //double forward
+  if (
+    (from.y === 1 && color === "white") ||
+    (from.y === 6 && color === "black")
+  ) {
+    if (positions[from.x][from.y + 2 * dir].figure === null)
+      moves.push({ x: from.x, y: from.y + 2 * dir });
+  }
+  //en passant
+  if (
+    couldEnPassantOn &&
+    Math.abs(couldEnPassantOn.x - from.x) === 1 &&
+    couldEnPassantOn.y === from.y
+  ) {
+    moves.push({ x: couldEnPassantOn.x, y: from.y + dir });
+  }
+  //takes
+  if (
+    positions[from.x + 1][from.y + dir].color != color &&
+    positions[from.x + 1][from.y + dir].color
+  ) {
+    moves.push({ x: from.x + 1, y: from.y + dir });
+  }
+  if (
+    positions[from.x - 1][from.y + dir].color != color &&
+    positions[from.x - 1][from.y + dir].color
+  ) {
+    moves.push({ x: from.x - 1, y: from.y + dir });
+  }
+
+  return moves;
+}
+
 const isOnBoard = (coords: xyCoords): boolean => {
   if (coords.x < 0 || coords.x > 7 || coords.y < 0 || coords.y > 7)
     return false;
   return true;
 };
-const isMoveSelfChecking = (from: xyCoords, to: xyCoords): boolean => {
+const isMoveSelfChecking = (
+  from: xyCoords,
+  to: xyCoords,
+  positions: Positions
+): boolean => {
   throw new Error("Function not implemented.");
 };
 
