@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styles from "@/styles/Chessboard.module.css";
-import { whiteBottom } from "@/constants/Constans";
+import { startCastleMovement, whiteBottom } from "@/constants/Constans";
 
 export default function Chessboard() {
   const [figurePlacement, setFigurePlacement] = useState(whiteBottom);
@@ -9,6 +9,8 @@ export default function Chessboard() {
   const [tileSelected, setTileSelected] = useState(null);
   const [availableTiles, setAvailableTiles] = useState([]);
   const [movesHeap, setMovesHeap] = useState([]);
+  const [castleMovementTrack, setCastleMovementTrack] =
+    useState(startCastleMovement);
 
   return <div className={styles.container}>Chessboard</div>;
 }

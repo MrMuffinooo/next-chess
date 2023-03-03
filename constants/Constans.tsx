@@ -93,6 +93,19 @@ export const straightDirections = [
   { xDelta: -1, yDelta: 0 },
   { xDelta: 0, yDelta: 1 },
 ];
+
+export const startCastleMovement = {
+  black: {
+    a: true,
+    h: true,
+    e: true,
+  },
+  white: {
+    a: true,
+    h: true,
+    e: true,
+  },
+};
 /*
 K-king
 Q-queen

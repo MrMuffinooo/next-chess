@@ -1,9 +1,16 @@
 import { diagonalDirections, straightDirections } from "@/constants/Constans";
-import { Positions, xyCoords, Color, Direction } from "@/constants/Types";
+import {
+  Positions,
+  xyCoords,
+  Color,
+  Direction,
+  castleMovementTrack,
+} from "@/constants/Types";
 export const getLegalMoves = (
   positions: Positions,
   from: xyCoords,
-  couldEnPassantOn: xyCoords | null
+  couldEnPassantOn: xyCoords | null,
+  castleMovementTrack: castleMovementTrack
 ): xyCoords[] => {
   const figure = positions[from.x][from.y].figure;
   const color = positions[from.x][from.y].color;
@@ -33,11 +40,24 @@ export const getLegalMoves = (
       break;
     case "K":
       //castle
-      moves.concat(kingMoves(from, positions));
+      moves.concat(kingMoves(from, castleMovementTrack, positions));
       break;
   }
 
-  return moves.filter((coords) => !isMoveSelfChecking(from, coords));
+  return moves.filter((coords) => !isMoveHangingKing(from, coords, positions));
+};
+
+const isMoveHangingKing = (
+  from: xyCoords,
+  to: xyCoords,
+  positions: Positions
+): boolean => {
+  const color = positions[from.x][from.y].color;
+  if (!color) throw new Error("No color");
+
+  const newPositions = move(from, to, positions);
+  const kingPosition = findKing(newPositions, color);
+  return isFieldAttacked(kingPosition, newPositions, color);
 };
 
 const straightMoves = (from: xyCoords, positions: Positions): xyCoords[] => {
@@ -68,8 +88,8 @@ const lineMoves = (
   });
   return moves;
 };
+
 //for checks, mates, castling and king moves
-//
 const isFieldAttacked = (
   coords: xyCoords,
   positions: Positions,
@@ -209,17 +229,53 @@ function pawnMoves(
   return moves;
 }
 
+const kingMoves = (
+  from: xyCoords,
+  castleMovementTrack: castleMovementTrack,
+  positions: Positions
+): xyCoords[] => {
+  const moves: xyCoords[] = [];
+  moves.concat(getAdjasentFields(from));
+  const color = positions[from.x][from.y].color;
+
+  if (!color) throw new Error("No color");
+
+  const row = color === "black" ? 7 : 0;
+  //castles
+  //king didn't move
+  if (castleMovementTrack[color].e) {
+    //a rook didn't move
+    if (castleMovementTrack[color].a) {
+      //king doesn't pass attacked field
+      if (
+        positions[0][row].color == color &&
+        positions[0][row].figure == "R" &&
+        !isFieldAttacked(from, positions, color) &&
+        !isFieldAttacked({ x: from.x - 1, y: from.y }, positions, color)
+      ) {
+        moves.push({ x: from.x - 2, y: from.y });
+      }
+    }
+    //h rook didn't move
+    if (castleMovementTrack[color].h) {
+      //king doesn't pass attacked field
+      if (
+        positions[7][row].color == color &&
+        positions[7][row].figure == "R" &&
+        !isFieldAttacked(from, positions, color) &&
+        !isFieldAttacked({ x: from.x + 1, y: from.y }, positions, color)
+      ) {
+        moves.push({ x: from.x + 2, y: from.y });
+      }
+    }
+  }
+  return moves;
+};
+
 const isOnBoard = (coords: xyCoords): boolean => {
   if (coords.x < 0 || coords.x > 7 || coords.y < 0 || coords.y > 7)
     return false;
   return true;
-};
-const isMoveSelfChecking = (
-  from: xyCoords,
-  to: xyCoords,
-  positions: Positions
-): boolean => {
-  throw new Error("Function not implemented.");
 };
 
 //does not check legality
@@ -267,17 +323,6 @@ const move = (
   newPositions[to.x][to.y].color = newPositions[from.x][from.y].color;
   newPositions[from.x][from.y] = { figure: null, color: null };
   return newPositions;
-};
-
-const filterChecks = (
-  positions: Positions,
-  coords: xyCoords,
-  moves: xyCoords[],
-  color: Color
-): xyCoords[] => {
-  const kingPosition = findKing(positions, color);
-  //if king moves
-  //if someone else moves
 };
 
 const findKing = (positions: Positions, color: Color): xyCoords => {

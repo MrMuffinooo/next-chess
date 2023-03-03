@@ -30,6 +30,18 @@ export type MoveLog = {
   takes: Piece | null;
 };
 
+export type castleMovementTrack = {
+  black: {
+    a: boolean;
+    h: boolean;
+    e: boolean;
+  };
+  white: {
+    a: boolean;
+    h: boolean;
+    e: boolean;
+  };
+};
 /*
 K-king
 Q-queen
