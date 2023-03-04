@@ -10,10 +10,15 @@ export type Color = "white" | "black";
 //   | "W"
 //   | "NW";
 
-export type Positions = {
-  figure: Piece | null;
-  color: Color | null;
-}[][];
+export type Position =
+  | {
+      figure: Piece;
+      color: Color;
+    }
+  | {
+      figure: null;
+      color: null;
+    };
 
 export type xyCoords = {
   x: number;

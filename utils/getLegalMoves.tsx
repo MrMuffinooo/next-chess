@@ -1,13 +1,13 @@
 import { diagonalDirections, straightDirections } from "@/constants/Constans";
 import {
-  Positions,
+  Position,
   xyCoords,
   Color,
   Direction,
   castleMovementTrack,
 } from "@/constants/Types";
 export const getLegalMoves = (
-  positions: Positions,
+  positions: Position[][],
   from: xyCoords,
   couldEnPassantOn: xyCoords | null,
   castleMovementTrack: castleMovementTrack
@@ -50,7 +50,7 @@ export const getLegalMoves = (
 const isMoveHangingKing = (
   from: xyCoords,
   to: xyCoords,
-  positions: Positions
+  positions: Position[][]
 ): boolean => {
   const color = positions[from.x][from.y].color;
   if (!color) throw new Error("No color");
@@ -60,16 +60,16 @@ const isMoveHangingKing = (
   return isFieldAttacked(kingPosition, newPositions, color);
 };
 
-const straightMoves = (from: xyCoords, positions: Positions): xyCoords[] => {
+const straightMoves = (from: xyCoords, positions: Position[][]): xyCoords[] => {
   return lineMoves(from, positions, straightDirections);
 };
-const diagonalMoves = (from: xyCoords, positions: Positions): xyCoords[] => {
+const diagonalMoves = (from: xyCoords, positions: Position[][]): xyCoords[] => {
   return lineMoves(from, positions, diagonalDirections);
 };
 
 const lineMoves = (
   from: xyCoords,
-  positions: Positions,
+  positions: Position[][],
   directions: Direction[]
 ): xyCoords[] => {
   const moves: xyCoords[] = [];
@@ -92,7 +92,7 @@ const lineMoves = (
 //for checks, mates, castling and king moves
 const isFieldAttacked = (
   coords: xyCoords,
-  positions: Positions,
+  positions: Position[][],
   victimColor: Color
 ): boolean => {
   const adjacent = getAdjasentFields(coords);
@@ -187,7 +187,7 @@ const knightMoves = (from: xyCoords): xyCoords[] => {
 
 function pawnMoves(
   from: xyCoords,
-  positions: Positions,
+  positions: Position[][],
   couldEnPassantOn: xyCoords | null
 ): xyCoords[] {
   const moves: xyCoords[] = [];
@@ -232,7 +232,7 @@ function pawnMoves(
 const kingMoves = (
   from: xyCoords,
   castleMovementTrack: castleMovementTrack,
-  positions: Positions
+  positions: Position[][]
 ): xyCoords[] => {
   const moves: xyCoords[] = [];
   moves.concat(getAdjasentFields(from));
@@ -279,12 +279,12 @@ const isOnBoard = (coords: xyCoords): boolean => {
 };
 
 //does not check legality
-const move = (
+export const move = (
   from: xyCoords,
   to: xyCoords,
-  positions: Positions
-): Positions => {
-  const newPositions: Positions = JSON.parse(JSON.stringify(positions));
+  positions: Position[][]
+): Position[][] => {
+  const newPositions: Position[][] = JSON.parse(JSON.stringify(positions));
 
   if (newPositions[from.x][from.y].figure === "K") {
     //castle
@@ -325,7 +325,7 @@ const move = (
   return newPositions;
 };
 
-const findKing = (positions: Positions, color: Color): xyCoords => {
+const findKing = (positions: Position[][], color: Color): xyCoords => {
   const cols = positions.map((column) =>
     column.findIndex((field) => field.color === color && field.figure === "K")
   );

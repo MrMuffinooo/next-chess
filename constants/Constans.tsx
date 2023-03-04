@@ -1,4 +1,6 @@
-export const whiteBottom = [
+import { Position } from "@/constants/Types";
+
+export const whiteBottom: Position[][] = [
   [
     { figure: "R", color: "white" },
     { figure: "p", color: "white" },
