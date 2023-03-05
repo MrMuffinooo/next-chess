@@ -15,36 +15,43 @@ export const getLegalMoves = (
   const figure = positions[from.x][from.y].figure;
   const color = positions[from.x][from.y].color;
 
-  const moves: xyCoords[] = [];
+  let moves: xyCoords[] = [];
+
+  console.log(
+    "Getting legal moves for " + color + " " + figure + ". At ",
+    from
+  );
 
   switch (figure) {
     case "R":
-      moves.concat(straightMoves(from, positions));
+      moves = straightMoves(from, positions);
       break;
     case "B":
-      moves.concat(diagonalMoves(from, positions));
+      moves = diagonalMoves(from, positions);
       break;
     case "Q":
-      moves.concat(straightMoves(from, positions));
-      moves.concat(diagonalMoves(from, positions));
+      moves = straightMoves(from, positions);
+      moves = moves.concat(diagonalMoves(from, positions));
       break;
     case "N":
-      moves.concat(
-        knightMoves(from).filter(({ x, y }) => positions[x][y].color !== color)
+      moves = knightMoves(from).filter(
+        ({ x, y }) => positions[x][y].color !== color
       );
+
       break;
     case "p":
       //en passaint
       //promotion
-      moves.concat(pawnMoves(from, positions, couldEnPassantOn));
+      moves = pawnMoves(from, positions, couldEnPassantOn);
       break;
     case "K":
       //castle
-      moves.concat(kingMoves(from, castleMovementTrack, positions));
+      moves = kingMoves(from, castleMovementTrack, positions);
       break;
   }
-
-  return moves.filter((coords) => !isMoveHangingKing(from, coords, positions));
+  console.log("moves before check filter: ", moves);
+  //return moves.filter((coords) => !isMoveHangingKing(from, coords, positions));
+  return moves;
 };
 
 const isMoveHangingKing = (
@@ -75,8 +82,8 @@ const lineMoves = (
   const moves: xyCoords[] = [];
   const color = positions[from.x][from.y].color;
   directions.forEach((dir) => {
-    let x = from.x;
-    let y = from.y;
+    let x = from.x + dir.xDelta;
+    let y = from.y + dir.yDelta;
     while (isOnBoard({ x: x, y: y }) && positions[x][y].color !== color) {
       moves.push({ x: x, y: y });
       if (positions[x][y].color != null) {
@@ -201,7 +208,10 @@ function pawnMoves(
     (from.y === 1 && color === "white") ||
     (from.y === 6 && color === "black")
   ) {
-    if (positions[from.x][from.y + 2 * dir].figure === null)
+    if (
+      positions[from.x][from.y + 2 * dir].figure === null &&
+      positions[from.x][from.y + dir].figure === null
+    )
       moves.push({ x: from.x, y: from.y + 2 * dir });
   }
   //en passant
@@ -236,11 +246,11 @@ const kingMoves = (
   castleMovementTrack: castleMovementTrack,
   positions: Position[][]
 ): xyCoords[] => {
-  const moves: xyCoords[] = [];
-  moves.concat(getAdjasentFields(from));
   const color = positions[from.x][from.y].color;
-
   if (!color) throw new Error("No color");
+  const moves = getAdjasentFields(from).filter((coords) => {
+    return positions[coords.x][coords.y].color != color;
+  });
 
   const row = color === "black" ? 7 : 0;
   //castles
@@ -255,7 +265,14 @@ const kingMoves = (
         !isFieldAttacked(from, positions, color) &&
         !isFieldAttacked({ x: from.x - 1, y: from.y }, positions, color)
       ) {
-        moves.push({ x: from.x - 2, y: from.y });
+        //empty space between
+        if (
+          !positions[1][row].figure &&
+          !positions[2][row].figure &&
+          !positions[3][row].figure
+        ) {
+          moves.push({ x: from.x - 2, y: from.y });
+        }
       }
     }
     //h rook didn't move
@@ -267,7 +284,10 @@ const kingMoves = (
         !isFieldAttacked(from, positions, color) &&
         !isFieldAttacked({ x: from.x + 1, y: from.y }, positions, color)
       ) {
-        moves.push({ x: from.x + 2, y: from.y });
+        //empty space between
+        if (!positions[6][row].figure && !positions[5][row].figure) {
+          moves.push({ x: from.x + 2, y: from.y });
+        }
       }
     }
   }

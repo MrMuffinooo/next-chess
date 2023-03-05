@@ -31,7 +31,9 @@ export default function Chessboard() {
     } else {
       if (
         figurePlacement[coords.x][coords.y].color ==
-        (isWhiteMove ? "white" : "black")
+          (isWhiteMove ? "white" : "black") &&
+        tileSelected.x != coords.x &&
+        tileSelected.y != coords.y
       ) {
         setTileSelected(coords);
         setAvailableTiles(

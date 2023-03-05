@@ -39,15 +39,12 @@ export default function Tile({
       onClick={() => onClick({ x: col, y: row })}
     >
       {fig ? (
-        <Image
-          src={"/pieces/" + color + fig + ".png"}
-          alt={color + fig}
-          width={100}
-          height={100}
-        />
+        <Image src={"/pieces/" + color + fig + ".png"} alt={color + fig} fill />
       ) : null}
-      {isPossibleMove ? (
-        <Image src={"move.png"} alt={"move"} width={100} height={100} />
+      {fig && isPossibleMove ? (
+        <Image src={"/takes.png"} alt={"take"} fill />
+      ) : isPossibleMove ? (
+        <Image src={"/move.png"} alt={"move"} fill />
       ) : null}
     </div>
   );
