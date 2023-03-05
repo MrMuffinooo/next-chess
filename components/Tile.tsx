@@ -36,7 +36,7 @@ export default function Tile({
           ? "darkorange"
           : "white",
       }}
-      onClick={() => onClick({ x: row, y: col })}
+      onClick={() => onClick({ x: col, y: row })}
     >
       {fig ? (
         <Image

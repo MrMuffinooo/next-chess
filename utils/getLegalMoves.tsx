@@ -214,12 +214,14 @@ function pawnMoves(
   }
   //takes
   if (
+    from.x + 1 < 8 &&
     positions[from.x + 1][from.y + dir].color != color &&
     positions[from.x + 1][from.y + dir].color
   ) {
     moves.push({ x: from.x + 1, y: from.y + dir });
   }
   if (
+    from.x - 1 >= 0 &&
     positions[from.x - 1][from.y + dir].color != color &&
     positions[from.x - 1][from.y + dir].color
   ) {

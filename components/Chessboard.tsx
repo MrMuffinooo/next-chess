@@ -17,6 +17,7 @@ export default function Chessboard() {
     useState(startCastleMovement);
 
   const handleTileClick = (coords: xyCoords) => {
+    console.log("clicked: " + JSON.stringify(coords));
     if (!tileSelected) {
       if (
         figurePlacement[coords.x][coords.y].color ==
@@ -53,26 +54,48 @@ export default function Chessboard() {
       }
     }
   };
+  const logState = () => {
+    console.log("-------------STATE-------------");
+    console.log("Positions:");
+    console.log(figurePlacement);
+    console.log("Is white move:");
+    console.log(isWhiteMove);
+    console.log("Selected tile:");
+    console.log(tileSelected);
+    console.log("Available move tiles:");
+    console.log(availableTiles);
+    console.log("Castling track:");
+    console.log(castleMovementTrack);
+    console.log("-------------------------------");
+  };
   return (
     <div className={styles.container}>
       {[...Array(8)].map((v, i) =>
-        [...Array(8)].map((w, j) => (
-          <Tile
-            id={8 * (7 - i) + j}
-            row={7 - i}
-            col={j}
-            key={8 * i + j}
-            piece={figurePlacement[j][7 - i]}
-            onClick={handleTileClick}
-            isPossibleMove={availableTiles.some((coords) => {
-              return coords.x == j && coords.y == i;
-            })}
-            isHighlighted={
-              tileSelected ? tileSelected.x == j && tileSelected.y == i : false
-            }
-          />
-        ))
+        [...Array(8)].map((w, colNo) => {
+          const rowNo = 7 - i;
+          return (
+            <Tile
+              id={8 * rowNo + colNo}
+              row={rowNo}
+              col={colNo}
+              key={8 * rowNo + colNo}
+              piece={figurePlacement[colNo][rowNo]}
+              onClick={handleTileClick}
+              isPossibleMove={availableTiles.some((coords) => {
+                return coords.x == colNo && coords.y == rowNo;
+              })}
+              isHighlighted={
+                tileSelected
+                  ? tileSelected.x == colNo && tileSelected.y == rowNo
+                  : false
+              }
+            />
+          );
+        })
       )}
+      <button className={styles.logButton} onClick={logState}>
+        Log state
+      </button>
     </div>
   );
 }
