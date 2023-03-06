@@ -10,6 +10,9 @@ export default function Chessboard() {
   const [whiteChecked, setWhiteChecked] = useState(false);
   const [blackChecked, setBlackChecked] = useState(false);
   const [tileSelected, setTileSelected] = useState<xyCoords | null>(null);
+  const [couldEnPassantOn, setCouldEnPassantOn] = useState<xyCoords | null>(
+    null
+  );
   const [availableTiles, setAvailableTiles] = useState<xyCoords[]>([]);
   const [movesHeap, setMovesHeap] = useState([]);
   const [isWhiteMove, setIsWhiteMove] = useState(true);
@@ -25,7 +28,12 @@ export default function Chessboard() {
       ) {
         setTileSelected(coords);
         setAvailableTiles(
-          getLegalMoves(figurePlacement, coords, null, castleMovementTrack)
+          getLegalMoves(
+            figurePlacement,
+            coords,
+            couldEnPassantOn,
+            castleMovementTrack
+          )
         );
       }
     } else {
@@ -37,14 +45,29 @@ export default function Chessboard() {
       ) {
         setTileSelected(coords);
         setAvailableTiles(
-          getLegalMoves(figurePlacement, coords, null, castleMovementTrack)
+          getLegalMoves(
+            figurePlacement,
+            coords,
+            couldEnPassantOn,
+            castleMovementTrack
+          )
         );
       } else if (
         availableTiles.some((possible) => {
           return possible.x == coords.x && possible.y == coords.y;
         })
       ) {
+        if (
+          figurePlacement[tileSelected.x][tileSelected.y].figure == "p" &&
+          Math.abs(tileSelected.y - coords.y) == 2
+        ) {
+          setCouldEnPassantOn(coords);
+        } else {
+          setCouldEnPassantOn(null);
+        }
+
         setFigurePlacement(move(tileSelected, coords, figurePlacement));
+
         setAvailableTiles([]);
         setTileSelected(null);
         setIsWhiteMove((isWhiteMove) => {
@@ -68,6 +91,8 @@ export default function Chessboard() {
     console.log(availableTiles);
     console.log("Castling track:");
     console.log(castleMovementTrack);
+    console.log("Can En Passant:");
+    console.log(couldEnPassantOn);
     console.log("-------------------------------");
   };
   return (
@@ -89,6 +114,12 @@ export default function Chessboard() {
               isHighlighted={
                 tileSelected
                   ? tileSelected.x == colNo && tileSelected.y == rowNo
+                  : false
+              }
+              canEnPassantOnto={
+                couldEnPassantOn
+                  ? couldEnPassantOn.x == colNo &&
+                    couldEnPassantOn.y + (isWhiteMove ? 1 : -1) == rowNo
                   : false
               }
             />

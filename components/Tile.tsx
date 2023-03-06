@@ -12,6 +12,7 @@ type Props = {
   onClick: (coords: xyCoords) => void;
   isPossibleMove: boolean;
   isHighlighted: boolean;
+  canEnPassantOnto: boolean;
 };
 
 export default function Tile({
@@ -22,6 +23,7 @@ export default function Tile({
   onClick,
   isPossibleMove,
   isHighlighted,
+  canEnPassantOnto,
 }: Props) {
   const isBlack = Boolean(Math.abs(row - col) % 2);
   const fig = piece.figure?.toLowerCase();
@@ -41,11 +43,12 @@ export default function Tile({
       {fig ? (
         <Image src={"/pieces/" + color + fig + ".png"} alt={color + fig} fill />
       ) : null}
-      {fig && isPossibleMove ? (
+      {(fig || canEnPassantOnto) && isPossibleMove ? (
         <Image src={"/takes.png"} alt={"take"} fill />
       ) : isPossibleMove ? (
         <Image src={"/move.png"} alt={"move"} fill />
       ) : null}
+      {/* {col} {row} */}
     </div>
   );
 }
