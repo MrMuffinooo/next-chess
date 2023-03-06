@@ -40,8 +40,7 @@ export default function Chessboard() {
       if (
         figurePlacement[coords.x][coords.y].color ==
           (isWhiteMove ? "white" : "black") &&
-        tileSelected.x != coords.x &&
-        tileSelected.y != coords.y
+        (tileSelected.x != coords.x || tileSelected.y != coords.y)
       ) {
         setTileSelected(coords);
         setAvailableTiles(
@@ -139,10 +138,9 @@ export default function Chessboard() {
                   : false
               }
               canEnPassantOnto={
-                couldEnPassantOn
+                tileSelected && couldEnPassantOn
                   ? couldEnPassantOn.x == colNo &&
                     couldEnPassantOn.y + (isWhiteMove ? 1 : -1) == rowNo &&
-                    tileSelected &&
                     figurePlacement[tileSelected.x][tileSelected.y].figure ==
                       "p"
                   : false

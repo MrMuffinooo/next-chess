@@ -50,8 +50,7 @@ export const getLegalMoves = (
       break;
   }
   console.log("moves before check filter: ", moves);
-  //return moves.filter((coords) => !isMoveHangingKing(from, coords, positions));
-  return moves;
+  return moves.filter((coords) => !isMoveHangingKing(from, coords, positions));
 };
 
 const isMoveHangingKing = (
@@ -352,7 +351,7 @@ const findKing = (positions: Position[][], color: Color): xyCoords => {
     column.findIndex((field) => field.color === color && field.figure === "K")
   );
   const y = cols.find((y) => y >= 0);
-  if (!y)
+  if (y == undefined)
     throw new Error(
       color.charAt(0).toUpperCase() + color.slice(1) + " king not found!!!"
     );
@@ -361,5 +360,6 @@ const findKing = (positions: Position[][], color: Color): xyCoords => {
     throw new Error(
       color.charAt(0).toUpperCase() + color.slice(1) + " king not found!!!"
     );
+  console.log(color, "king at: ", { x: x, y: y });
   return { x: x, y: y };
 };
