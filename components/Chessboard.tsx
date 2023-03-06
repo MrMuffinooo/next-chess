@@ -141,7 +141,10 @@ export default function Chessboard() {
               canEnPassantOnto={
                 couldEnPassantOn
                   ? couldEnPassantOn.x == colNo &&
-                    couldEnPassantOn.y + (isWhiteMove ? 1 : -1) == rowNo
+                    couldEnPassantOn.y + (isWhiteMove ? 1 : -1) == rowNo &&
+                    tileSelected &&
+                    figurePlacement[tileSelected.x][tileSelected.y].figure ==
+                      "p"
                   : false
               }
             />
