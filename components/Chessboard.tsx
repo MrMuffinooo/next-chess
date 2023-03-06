@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styles from "@/styles/Chessboard.module.css";
 import { startCastleMovement, whiteBottom } from "@/constants/Constans";
 import Tile from "./Tile";
-import { xyCoords } from "@/constants/Types";
+import { castleMovementTrack, xyCoords } from "@/constants/Types";
 import { getLegalMoves, move } from "@/utils/getLegalMoves";
 
 export default function Chessboard() {
@@ -67,6 +67,28 @@ export default function Chessboard() {
         }
 
         setFigurePlacement(move(tileSelected, coords, figurePlacement));
+
+        const newCastleMovementTrack: castleMovementTrack = JSON.parse(
+          JSON.stringify(castleMovementTrack)
+        );
+        if (tileSelected.y == 0) {
+          if (tileSelected.x == 0) {
+            newCastleMovementTrack.white.a = false;
+          } else if (tileSelected.x == 4) {
+            newCastleMovementTrack.white.e = false;
+          } else if (tileSelected.x == 7) {
+            newCastleMovementTrack.white.h = false;
+          }
+        } else if (tileSelected.y == 7) {
+          if (tileSelected.x == 0) {
+            newCastleMovementTrack.black.a = false;
+          } else if (tileSelected.x == 4) {
+            newCastleMovementTrack.black.e = false;
+          } else if (tileSelected.x == 7) {
+            newCastleMovementTrack.black.h = false;
+          }
+        }
+        setCastleMovementTrack(newCastleMovementTrack); //TODO optimize
 
         setAvailableTiles([]);
         setTileSelected(null);
