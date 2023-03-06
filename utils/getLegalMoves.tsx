@@ -14,13 +14,9 @@ export const getLegalMoves = (
 ): xyCoords[] => {
   const figure = positions[from.x][from.y].figure;
   const color = positions[from.x][from.y].color;
+  if (!color) throw new Error("No color");
 
   let moves: xyCoords[] = [];
-
-  console.log(
-    "Getting legal moves for " + color + " " + figure + ". At ",
-    from
-  );
 
   switch (figure) {
     case "R":
@@ -49,21 +45,16 @@ export const getLegalMoves = (
       moves = kingMoves(from, castleMovementTrack, positions);
       break;
   }
-  console.log("moves before check filter: ", moves);
-  return moves.filter((coords) => !isMoveHangingKing(from, coords, positions));
+  return moves.filter(
+    (coords) => !isKingInCheck(move(from, coords, positions), color)
+  );
 };
 
-const isMoveHangingKing = (
-  from: xyCoords,
-  to: xyCoords,
-  positions: Position[][]
-): boolean => {
-  const color = positions[from.x][from.y].color;
-  if (!color) throw new Error("No color");
+const isKingInCheck = (positions: Position[][], color: Color): boolean => {
+  const kingPosition = findKing(positions, color);
+  const isAttacked = isFieldAttacked(kingPosition, positions, color);
 
-  const newPositions = move(from, to, positions);
-  const kingPosition = findKing(newPositions, color);
-  return isFieldAttacked(kingPosition, newPositions, color);
+  return isAttacked;
 };
 
 const straightMoves = (from: xyCoords, positions: Position[][]): xyCoords[] => {
@@ -96,7 +87,7 @@ const lineMoves = (
 };
 
 //for checks, mates, castling and king moves
-const isFieldAttacked = (
+export const isFieldAttacked = (
   coords: xyCoords,
   positions: Position[][],
   victimColor: Color
@@ -135,9 +126,9 @@ const isFieldAttacked = (
   )
     return true; //knight protects
 
-  straightDirections.forEach((dir) => {
-    let x = coords.x;
-    let y = coords.y;
+  for (const dir of straightDirections) {
+    let x = coords.x + dir.xDelta;
+    let y = coords.y + dir.yDelta;
     while (isOnBoard({ x: x, y: y }) && positions[x][y].color !== victimColor) {
       if (positions[x][y].color != null) {
         if (positions[x][y].figure == "Q" || positions[x][y].figure == "R")
@@ -146,11 +137,11 @@ const isFieldAttacked = (
       x = x + dir.xDelta;
       y = y + dir.yDelta;
     }
-  });
+  }
 
-  diagonalDirections.forEach((dir) => {
-    let x = coords.x;
-    let y = coords.y;
+  for (const dir of diagonalDirections) {
+    let x = coords.x + dir.xDelta;
+    let y = coords.y + dir.yDelta;
     while (isOnBoard({ x: x, y: y }) && positions[x][y].color !== victimColor) {
       if (positions[x][y].color != null) {
         if (positions[x][y].figure == "Q" || positions[x][y].figure == "B")
@@ -159,7 +150,7 @@ const isFieldAttacked = (
       x = x + dir.xDelta;
       y = y + dir.yDelta;
     }
-  });
+  }
   return false; //nothing protects
 };
 
@@ -346,7 +337,7 @@ export const move = (
   return newPositions;
 };
 
-const findKing = (positions: Position[][], color: Color): xyCoords => {
+export const findKing = (positions: Position[][], color: Color): xyCoords => {
   const cols = positions.map((column) =>
     column.findIndex((field) => field.color === color && field.figure === "K")
   );
@@ -360,6 +351,5 @@ const findKing = (positions: Position[][], color: Color): xyCoords => {
     throw new Error(
       color.charAt(0).toUpperCase() + color.slice(1) + " king not found!!!"
     );
-  console.log(color, "king at: ", { x: x, y: y });
   return { x: x, y: y };
 };

@@ -3,7 +3,12 @@ import styles from "@/styles/Chessboard.module.css";
 import { startCastleMovement, whiteBottom } from "@/constants/Constans";
 import Tile from "./Tile";
 import { castleMovementTrack, xyCoords } from "@/constants/Types";
-import { getLegalMoves, move } from "@/utils/getLegalMoves";
+import {
+  findKing,
+  getLegalMoves,
+  isFieldAttacked,
+  move,
+} from "@/utils/getLegalMoves";
 
 export default function Chessboard() {
   const [figurePlacement, setFigurePlacement] = useState(whiteBottom);
@@ -20,7 +25,6 @@ export default function Chessboard() {
     useState(startCastleMovement);
 
   const handleTileClick = (coords: xyCoords) => {
-    console.log("clicked: " + JSON.stringify(coords));
     if (!tileSelected) {
       if (
         figurePlacement[coords.x][coords.y].color ==
@@ -64,8 +68,8 @@ export default function Chessboard() {
         } else {
           setCouldEnPassantOn(null);
         }
-
-        setFigurePlacement(move(tileSelected, coords, figurePlacement));
+        const newPlacement = move(tileSelected, coords, figurePlacement);
+        setFigurePlacement(newPlacement);
 
         const newCastleMovementTrack: castleMovementTrack = JSON.parse(
           JSON.stringify(castleMovementTrack)
@@ -88,6 +92,24 @@ export default function Chessboard() {
           }
         }
         setCastleMovementTrack(newCastleMovementTrack); //TODO optimize
+
+        if (isWhiteMove) {
+          setBlackChecked(
+            isFieldAttacked(
+              findKing(newPlacement, isWhiteMove ? "black" : "white"),
+              newPlacement,
+              !isWhiteMove ? "black" : "white"
+            )
+          );
+        } else {
+          setWhiteChecked(
+            isFieldAttacked(
+              findKing(newPlacement, isWhiteMove ? "black" : "white"),
+              newPlacement,
+              !isWhiteMove ? "black" : "white"
+            )
+          );
+        } //TODO optimize
 
         setAvailableTiles([]);
         setTileSelected(null);
@@ -114,6 +136,9 @@ export default function Chessboard() {
     console.log(castleMovementTrack);
     console.log("Can En Passant:");
     console.log(couldEnPassantOn);
+    console.log("Who is checked:");
+    console.log(whiteChecked ? "white" : blackChecked ? "black" : "none");
+
     console.log("-------------------------------");
   };
   return (
