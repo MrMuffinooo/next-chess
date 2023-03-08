@@ -23,6 +23,8 @@ export default function Chessboard() {
   const [isWhiteMove, setIsWhiteMove] = useState(true);
   const [castleMovementTrack, setCastleMovementTrack] =
     useState(startCastleMovement);
+  const [whiteKingPos, setWhiteKingPos] = useState({ x: 4, y: 0 });
+  const [blackKingPos, setBlackKingPos] = useState({ x: 4, y: 7 });
 
   const handleTileClick = (coords: xyCoords) => {
     if (!tileSelected) {
@@ -68,6 +70,10 @@ export default function Chessboard() {
         } else {
           setCouldEnPassantOn(null);
         }
+
+        if (figurePlacement[tileSelected.x][tileSelected.y].figure == "K") {
+          isWhiteMove ? setWhiteKingPos(coords) : setBlackKingPos(coords);
+        }
         const newPlacement = move(tileSelected, coords, figurePlacement);
         setFigurePlacement(newPlacement);
 
@@ -94,22 +100,22 @@ export default function Chessboard() {
         setCastleMovementTrack(newCastleMovementTrack); //TODO optimize
 
         if (isWhiteMove) {
-          setBlackChecked(
-            isFieldAttacked(
-              findKing(newPlacement, isWhiteMove ? "black" : "white"),
-              newPlacement,
-              !isWhiteMove ? "black" : "white"
-            )
+          const blackChecked = isFieldAttacked(
+            blackKingPos,
+            newPlacement,
+            "black"
           );
+          setBlackChecked(blackChecked);
+          setWhiteChecked(false);
         } else {
-          setWhiteChecked(
-            isFieldAttacked(
-              findKing(newPlacement, isWhiteMove ? "black" : "white"),
-              newPlacement,
-              !isWhiteMove ? "black" : "white"
-            )
+          const whiteChecked = isFieldAttacked(
+            whiteKingPos,
+            newPlacement,
+            "white"
           );
-        } //TODO optimize
+          setWhiteChecked(whiteChecked);
+          setBlackChecked(false);
+        }
 
         setAvailableTiles([]);
         setTileSelected(null);
@@ -136,8 +142,12 @@ export default function Chessboard() {
     console.log(castleMovementTrack);
     console.log("Can En Passant:");
     console.log(couldEnPassantOn);
-    console.log("Who is checked:");
-    console.log(whiteChecked ? "white" : blackChecked ? "black" : "none");
+    console.log("White is checked:");
+    console.log(whiteChecked);
+    console.log("Black is checked:");
+    console.log(blackChecked);
+    console.log("White king: ", whiteKingPos);
+    console.log("Black king: ", blackKingPos);
 
     console.log("-------------------------------");
   };

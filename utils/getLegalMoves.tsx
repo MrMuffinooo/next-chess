@@ -99,8 +99,11 @@ export const isFieldAttacked = (
         positions[coords.x][coords.y].figure === "K" &&
         positions[coords.x][coords.y].color !== victimColor
     )
-  )
+  ) {
+    console.log("King attacks ", coords);
+    console.log(victimColor);
     return true; //king protects
+  }
 
   const pawnDirection = victimColor === "white" ? 1 : -1;
   const pawnFields = [
@@ -113,9 +116,11 @@ export const isFieldAttacked = (
         positions[coords.x][coords.y].figure === "p" &&
         positions[coords.x][coords.y].color !== victimColor
     )
-  )
+  ) {
+    console.log("pawn attacks ", coords);
+    console.log(victimColor);
     return true; //pawn protects
-
+  }
   const knightFields = knightMoves(coords);
   if (
     knightFields.some(
@@ -123,16 +128,22 @@ export const isFieldAttacked = (
         positions[coords.x][coords.y].figure === "N" &&
         positions[coords.x][coords.y].color !== victimColor
     )
-  )
+  ) {
+    console.log("Knight attacks ", coords);
+    console.log(victimColor);
     return true; //knight protects
-
+  }
   for (const dir of straightDirections) {
     let x = coords.x + dir.xDelta;
     let y = coords.y + dir.yDelta;
     while (isOnBoard({ x: x, y: y }) && positions[x][y].color !== victimColor) {
       if (positions[x][y].color != null) {
-        if (positions[x][y].figure == "Q" || positions[x][y].figure == "R")
+        if (positions[x][y].figure == "Q" || positions[x][y].figure == "R") {
+          console.log({ x: x, y: y }, "Rook or Queen attacks ", coords);
+          console.log(victimColor);
           return true; // rook or queen protects
+        }
+        break;
       }
       x = x + dir.xDelta;
       y = y + dir.yDelta;
@@ -144,8 +155,12 @@ export const isFieldAttacked = (
     let y = coords.y + dir.yDelta;
     while (isOnBoard({ x: x, y: y }) && positions[x][y].color !== victimColor) {
       if (positions[x][y].color != null) {
-        if (positions[x][y].figure == "Q" || positions[x][y].figure == "B")
+        if (positions[x][y].figure == "Q" || positions[x][y].figure == "B") {
+          console.log({ x: x, y: y }, "Bishop or Queen attacks ", coords);
+          console.log(victimColor);
           return true; // bishop or queen protects
+        }
+        break;
       }
       x = x + dir.xDelta;
       y = y + dir.yDelta;
