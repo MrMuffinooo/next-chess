@@ -3,31 +3,30 @@ import styles from "@/styles/Chessboard.module.css";
 import { startCastleMovement, whiteBottom } from "@/constants/Constans";
 import Tile from "./Tile";
 import { castleMovementTrack, xyCoords } from "@/constants/Types";
-import {
-  findKing,
-  getLegalMoves,
-  isFieldAttacked,
-  move,
-} from "@/utils/getLegalMoves";
+import { getLegalMoves, isFieldAttacked, move } from "@/utils/getLegalMoves";
 
 export default function Chessboard() {
   const [figurePlacement, setFigurePlacement] = useState(whiteBottom);
+  const [isWhiteMove, setIsWhiteMove] = useState(true);
+
+  const [whiteKingPos, setWhiteKingPos] = useState({ x: 4, y: 0 });
+  const [blackKingPos, setBlackKingPos] = useState({ x: 4, y: 7 });
   const [whiteChecked, setWhiteChecked] = useState(false);
   const [blackChecked, setBlackChecked] = useState(false);
+  const [castleMovementTrack, setCastleMovementTrack] =
+    useState(startCastleMovement);
+
   const [tileSelected, setTileSelected] = useState<xyCoords | null>(null);
+  const [availableTiles, setAvailableTiles] = useState<xyCoords[]>([]);
+
   const [couldEnPassantOn, setCouldEnPassantOn] = useState<xyCoords | null>(
     null
   );
-  const [availableTiles, setAvailableTiles] = useState<xyCoords[]>([]);
   const [movesHeap, setMovesHeap] = useState([]);
-  const [isWhiteMove, setIsWhiteMove] = useState(true);
-  const [castleMovementTrack, setCastleMovementTrack] =
-    useState(startCastleMovement);
-  const [whiteKingPos, setWhiteKingPos] = useState({ x: 4, y: 0 });
-  const [blackKingPos, setBlackKingPos] = useState({ x: 4, y: 7 });
 
   const handleTileClick = (coords: xyCoords) => {
     if (!tileSelected) {
+      //clicked my color
       if (
         figurePlacement[coords.x][coords.y].color ==
         (isWhiteMove ? "white" : "black")
@@ -38,11 +37,13 @@ export default function Chessboard() {
             figurePlacement,
             coords,
             couldEnPassantOn,
-            castleMovementTrack
+            castleMovementTrack,
+            isWhiteMove ? whiteKingPos : blackKingPos
           )
         );
       }
     } else {
+      //switched to my color
       if (
         figurePlacement[coords.x][coords.y].color ==
           (isWhiteMove ? "white" : "black") &&
@@ -54,14 +55,17 @@ export default function Chessboard() {
             figurePlacement,
             coords,
             couldEnPassantOn,
-            castleMovementTrack
+            castleMovementTrack,
+            isWhiteMove ? whiteKingPos : blackKingPos
           )
         );
-      } else if (
+      } //clicked legal move
+      else if (
         availableTiles.some((possible) => {
           return possible.x == coords.x && possible.y == coords.y;
         })
       ) {
+        //set en passant
         if (
           figurePlacement[tileSelected.x][tileSelected.y].figure == "p" &&
           Math.abs(tileSelected.y - coords.y) == 2
@@ -71,34 +75,24 @@ export default function Chessboard() {
           setCouldEnPassantOn(null);
         }
 
+        //track king position
         if (figurePlacement[tileSelected.x][tileSelected.y].figure == "K") {
           isWhiteMove ? setWhiteKingPos(coords) : setBlackKingPos(coords);
         }
+
+        //track castling moves
+
+        const newCastleMovementTrack = trackCastle(
+          castleMovementTrack,
+          tileSelected
+        );
+        setCastleMovementTrack(newCastleMovementTrack);
+
+        //move
         const newPlacement = move(tileSelected, coords, figurePlacement);
         setFigurePlacement(newPlacement);
 
-        const newCastleMovementTrack: castleMovementTrack = JSON.parse(
-          JSON.stringify(castleMovementTrack)
-        );
-        if (tileSelected.y == 0) {
-          if (tileSelected.x == 0) {
-            newCastleMovementTrack.white.a = false;
-          } else if (tileSelected.x == 4) {
-            newCastleMovementTrack.white.e = false;
-          } else if (tileSelected.x == 7) {
-            newCastleMovementTrack.white.h = false;
-          }
-        } else if (tileSelected.y == 7) {
-          if (tileSelected.x == 0) {
-            newCastleMovementTrack.black.a = false;
-          } else if (tileSelected.x == 4) {
-            newCastleMovementTrack.black.e = false;
-          } else if (tileSelected.x == 7) {
-            newCastleMovementTrack.black.h = false;
-          }
-        }
-        setCastleMovementTrack(newCastleMovementTrack); //TODO optimize
-
+        //track checks
         if (isWhiteMove) {
           const blackChecked = isFieldAttacked(
             blackKingPos,
@@ -117,12 +111,16 @@ export default function Chessboard() {
           setBlackChecked(false);
         }
 
+        //reset selection
         setAvailableTiles([]);
         setTileSelected(null);
+
+        //switch sides
         setIsWhiteMove((isWhiteMove) => {
           return !isWhiteMove;
         });
-      } else {
+      } //clicked somewhere else
+      else {
         setAvailableTiles([]);
         setTileSelected(null);
       }
@@ -151,6 +149,34 @@ export default function Chessboard() {
 
     console.log("-------------------------------");
   };
+
+  const trackCastle = (
+    castleMovementTrack: castleMovementTrack,
+    tileSelected: xyCoords
+  ) => {
+    const newCastleMovementTrack: castleMovementTrack = JSON.parse(
+      JSON.stringify(castleMovementTrack)
+    );
+    if (tileSelected.y == 0) {
+      if (tileSelected.x == 0) {
+        newCastleMovementTrack.white.a = false;
+      } else if (tileSelected.x == 4) {
+        newCastleMovementTrack.white.e = false;
+      } else if (tileSelected.x == 7) {
+        newCastleMovementTrack.white.h = false;
+      }
+    } else if (tileSelected.y == 7) {
+      if (tileSelected.x == 0) {
+        newCastleMovementTrack.black.a = false;
+      } else if (tileSelected.x == 4) {
+        newCastleMovementTrack.black.e = false;
+      } else if (tileSelected.x == 7) {
+        newCastleMovementTrack.black.h = false;
+      }
+    }
+    return newCastleMovementTrack;
+  };
+
   return (
     <div className={styles.container}>
       {[...Array(8)].map((v, i) =>

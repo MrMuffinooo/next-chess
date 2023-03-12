@@ -6,11 +6,13 @@ import {
   Direction,
   castleMovementTrack,
 } from "@/constants/Types";
+
 export const getLegalMoves = (
   positions: Position[][],
   from: xyCoords,
   couldEnPassantOn: xyCoords | null,
-  castleMovementTrack: castleMovementTrack
+  castleMovementTrack: castleMovementTrack,
+  kingPos: xyCoords
 ): xyCoords[] => {
   const figure = positions[from.x][from.y].figure;
   const color = positions[from.x][from.y].color;
@@ -36,25 +38,18 @@ export const getLegalMoves = (
 
       break;
     case "p":
-      //en passaint
-      //promotion
       moves = pawnMoves(from, positions, couldEnPassantOn);
       break;
     case "K":
-      //castle
       moves = kingMoves(from, castleMovementTrack, positions);
-      break;
+      return moves.filter(
+        (coords) =>
+          !isFieldAttacked(coords, move(from, coords, positions), color)
+      );
   }
   return moves.filter(
-    (coords) => !isKingInCheck(move(from, coords, positions), color)
+    (coords) => !isFieldAttacked(kingPos, move(from, coords, positions), color)
   );
-};
-
-const isKingInCheck = (positions: Position[][], color: Color): boolean => {
-  const kingPosition = findKing(positions, color);
-  const isAttacked = isFieldAttacked(kingPosition, positions, color);
-
-  return isAttacked;
 };
 
 const straightMoves = (from: xyCoords, positions: Position[][]): xyCoords[] => {
@@ -197,11 +192,11 @@ const knightMoves = (from: xyCoords): xyCoords[] => {
   ].filter(isOnBoard);
 };
 
-function pawnMoves(
+const pawnMoves = (
   from: xyCoords,
   positions: Position[][],
   couldEnPassantOn: xyCoords | null
-): xyCoords[] {
+): xyCoords[] => {
   const moves: xyCoords[] = [];
   const color = positions[from.x][from.y].color;
   const dir = color === "white" ? 1 : -1;
@@ -244,7 +239,7 @@ function pawnMoves(
   }
 
   return moves;
-}
+};
 
 const kingMoves = (
   from: xyCoords,
@@ -258,7 +253,7 @@ const kingMoves = (
   });
 
   const row = color === "black" ? 7 : 0;
-  //castles
+
   //king didn't move
   if (castleMovementTrack[color].e) {
     //a rook didn't move
@@ -350,21 +345,4 @@ export const move = (
   newPositions[to.x][to.y].color = newPositions[from.x][from.y].color;
   newPositions[from.x][from.y] = { figure: null, color: null };
   return newPositions;
-};
-
-export const findKing = (positions: Position[][], color: Color): xyCoords => {
-  const cols = positions.map((column) =>
-    column.findIndex((field) => field.color === color && field.figure === "K")
-  );
-  const y = cols.find((y) => y >= 0);
-  if (y == undefined)
-    throw new Error(
-      color.charAt(0).toUpperCase() + color.slice(1) + " king not found!!!"
-    );
-  const x = cols.indexOf(y);
-  if (x === -1)
-    throw new Error(
-      color.charAt(0).toUpperCase() + color.slice(1) + " king not found!!!"
-    );
-  return { x: x, y: y };
 };

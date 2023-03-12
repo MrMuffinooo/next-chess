@@ -1,14 +1,5 @@
 export type Piece = "K" | "Q" | "R" | "B" | "N" | "p";
 export type Color = "white" | "black";
-// export type PositionsRelation =
-//   | "N"
-//   | "NE"
-//   | "E"
-//   | "SE"
-//   | "S"
-//   | "SW"
-//   | "W"
-//   | "NW";
 
 export type Position =
   | {
